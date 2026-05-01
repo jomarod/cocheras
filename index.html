@@ -167,37 +167,18 @@
     <div class="sum-cell"><div class="sum-label">Llaves</div><div class="sum-val amber" id="s-llav">—</div></div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-cocheras" onclick="switchTab('cocheras')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="10" width="22" height="11" rx="2"/><path d="M1 10l3-7h16l3 7"/></svg>
-      Cocheras
-    </button>
-    <button class="tab-btn amber-tab" id="tab-pagos" onclick="switchTab('pagos')">
+  <div class="tabs">    
+    <button class="tab-btn amber-tab active" id="tab-pagos" onclick="switchTab('pagos')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       Pagos
     </button>
+	<button class="tab-btn" id="tab-cocheras" onclick="switchTab('cocheras')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="10" width="22" height="11" rx="2"/><path d="M1 10l3-7h16l3 7"/></svg>
+      Cocheras
+    </button>
   </div>
-
-  <div class="tab-panel active" id="panel-cocheras">
-    <div class="panel-cocheras-inner">
-      <div id="plazas-wrap"></div>
-      <button class="btn-nueva" id="btn-nueva">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nueva cochera
-      </button>
-      <div class="confirm-wrap" id="confirm-wrap">
-        <div class="confirm-box">
-          <p>¿Eliminar la cochera <strong id="confirm-name"></strong>?<br><span style="font-size:11px;color:var(--color-text-secondary)">Se borrarán sus pagos asociados.</span></p>
-          <div class="confirm-btns">
-            <button class="cbtn cbtn-cancel" onclick="closeConfirm()">Cancelar</button>
-            <button class="cbtn cbtn-del" id="confirm-del-btn">Eliminar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="tab-panel" id="panel-pagos">
+  
+  <div class="tab-panel active" id="panel-pagos">
     <div class="pagos-panel">
       <div class="pagos-header">
         <div class="pagos-icon">
@@ -249,6 +230,27 @@
     </div>
     <div style="height:12px;background:#fff8f0;"></div>
   </div>
+
+  <div class="tab-panel" id="panel-cocheras">
+    <div class="panel-cocheras-inner">
+      <div id="plazas-wrap"></div>
+      <button class="btn-nueva" id="btn-nueva">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva cochera
+      </button>
+      <div class="confirm-wrap" id="confirm-wrap">
+        <div class="confirm-box">
+          <p>¿Eliminar la cochera <strong id="confirm-name"></strong>?<br><span style="font-size:11px;color:var(--color-text-secondary)">Se borrarán sus pagos asociados.</span></p>
+          <div class="confirm-btns">
+            <button class="cbtn cbtn-cancel" onclick="closeConfirm()">Cancelar</button>
+            <button class="cbtn cbtn-del" id="confirm-del-btn">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
 
   <div class="actions-row">
     <button class="btn-save" id="btn-save">💾 Guardar</button>
