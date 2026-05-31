@@ -13,7 +13,7 @@
   .calc-header svg{width:22px;height:22px;flex-shrink:0;}
   .calc-header h1{font-size:14px;font-weight:700;color:#fff;}
   .calc-header p{font-size:9px;color:rgba(255,255,255,0.45);font-family:'JetBrains Mono',monospace;margin-top:1px;}
-  .summary-bar{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1.5px solid var(--color-border-secondary);}
+  .summary-bar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1.5px solid var(--color-border-secondary);}
   .sum-cell{padding:9px 12px;border-right:0.5px solid var(--color-border-tertiary);text-align:center;}
   .sum-cell:last-child{border-right:none;}
   .sum-label{font-size:9px;color:var(--color-text-tertiary);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.4px;}
@@ -165,6 +165,7 @@
     <div class="sum-cell"><div class="sum-label">Plazas</div><div class="sum-val" id="s-ocup">—</div></div>
     <div class="sum-cell"><div class="sum-label">Ingresos/mes</div><div class="sum-val green" id="s-ing">—</div></div>
     <div class="sum-cell"><div class="sum-label">Llaves</div><div class="sum-val amber" id="s-llav">—</div></div>
+    <div class="sum-cell"><div class="sum-label">Total</div><div class="sum-val green" id="s-total">—</div></div>
   </div>
 
   <div class="tabs">    
@@ -305,11 +306,11 @@ async function sbPatch(table, col, val, data) {
 }
 
 // ─── ESTADO ─────────────────────────────────────────────────────────────────
-const SK = 'cocheras_v7';
+const SK = 'cocheras_v8';
 const DEF = [
-  {id:'165',inquilino:'Anabel',renta:80,estado:'ocupada',llave:false,obs:''},
-  {id:'164',inquilino:'Héctor',renta:80,estado:'ocupada',llave:false,obs:''},
-  {id:'57', inquilino:'',      renta:0, estado:'libre',  llave:false,obs:''},
+  {id:'165',inquilino:'Anabel',renta:80,estado:'ocupada',llave:false,obs:'',propiedad:'Mario'},
+  {id:'164',inquilino:'Héctor',renta:80,estado:'ocupada',llave:false,obs:'',propiedad:'Mario'},
+  {id:'57', inquilino:'',      renta:0, estado:'libre',  llave:false,obs:'',propiedad:'Mario'},
 ];
 let plazas, pagos, pendingDelIdx = null;
 
@@ -317,7 +318,7 @@ let plazas, pagos, pendingDelIdx = null;
 try {
   const s = JSON.parse(localStorage.getItem(SK));
   if (s && s.plazas) {
-    plazas = s.plazas.map(p => ({obs:'',...p}));
+    plazas = s.plazas.map(p => ({obs:'',propiedad:'Mario',...p}));
     pagos  = s.pagos || [];
   } else throw 0;
 } catch(e) {
@@ -346,7 +347,8 @@ async function saveToSupabase() {
       renta: parseFloat(p.renta) || 0,
       estado: p.estado,
       llave: !!p.llave,
-      obs: p.obs || ''
+      obs: p.obs || '',
+      propiedad: p.propiedad || 'Mario'
     }));
     await sbUpsert('cocheras', cochRows);
 
@@ -391,7 +393,7 @@ async function loadFromSupabase() {
       sbGet('pagos')
     ]);
     if (dbCocheras.length) {
-      plazas = dbCocheras.map(p => ({obs:'',...p}));
+      plazas = dbCocheras.map(p => ({obs:'',propiedad:'Mario',...p}));
       pagos  = dbPagos.map(p => ({...p, sb_id: p.id}));
       saveLocal();
     }
@@ -422,9 +424,11 @@ function updateSummary() {
   const oc  = plazas.filter(p => p.estado==='ocupada').length;
   const ing = plazas.filter(p => p.estado==='ocupada').reduce((s,p) => s+(parseFloat(p.renta)||0), 0);
   const ll  = plazas.filter(p => p.llave).length;
-  document.getElementById('s-ocup').textContent = `${oc}/${plazas.length}`;
-  document.getElementById('s-ing').textContent  = `${ing}€`;
-  document.getElementById('s-llav').textContent = `${ll}/${plazas.length}`;
+  const tot = pagos.filter(p => p.cobrado).reduce((s,p) => s+(parseFloat(p.importe)||0), 0);
+  document.getElementById('s-ocup').textContent  = `${oc}/${plazas.length}`;
+  document.getElementById('s-ing').textContent   = `${ing}€`;
+  document.getElementById('s-llav').textContent  = `${ll}/${plazas.length}`;
+  document.getElementById('s-total').textContent = `${tot.toFixed(0)}€`;
 }
 function openConfirm(i) {
   pendingDelIdx = i;
@@ -446,6 +450,13 @@ document.getElementById('confirm-del-btn').addEventListener('click', async () =>
   toast('Cochera eliminada', '#e24b4a');
 });
 
+// ─── CALC TOTAL COBRADO ──────────────────────────────────────────────────────
+function calcTotal(plazaId) {
+  return pagos.filter(p => p.plaza === plazaId && p.cobrado)
+              .reduce((s, p) => s + (parseFloat(p.importe) || 0), 0)
+              .toFixed(0);
+}
+
 // ─── RENDER PLAZAS ───────────────────────────────────────────────────────────
 function renderPlazas() {
   const w = document.getElementById('plazas-wrap'); w.innerHTML = '';
@@ -465,11 +476,22 @@ function renderPlazas() {
           <input class="pf-input" type="number" value="${p.renta}" min="0" data-f="renta" data-i="${i}">
         </div>
         <div class="pf">
+          <div class="pf-label">Total</div>
+          <div class="pf-input pf-total" style="background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:5px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#1D9E75;cursor:default;">${calcTotal(p.id)} €</div>
+        </div>
+        <div class="pf">
           <div class="pf-label">Estado</div>
           <select class="pf-input" data-f="estado" data-i="${i}">
             <option value="ocupada" ${ec==='ocupada'?'selected':''}>Ocupada</option>
             <option value="libre" ${ec==='libre'?'selected':''}>Libre</option>
             <option value="pendiente" ${ec==='pendiente'?'selected':''}>Pendiente</option>
+          </select>
+        </div>
+        <div class="pf">
+          <div class="pf-label">Propiedad</div>
+          <select class="pf-input" data-f="propiedad" data-i="${i}">
+            <option value="Mario" ${(p.propiedad||'Mario')==='Mario'?'selected':''}>Mario</option>
+            <option value="Elvira" ${(p.propiedad||'Mario')==='Elvira'?'selected':''}>Elvira</option>
           </select>
         </div>
         <div class="pf" style="grid-column:1/-1">
@@ -498,6 +520,8 @@ function renderPlazas() {
         lbl.querySelector('span').textContent = plazas[i].llave ? 'Entregada' : 'Pendiente';
       } else if (f==='renta') {
         plazas[i].renta = parseFloat(e.target.value) || 0;
+      } else if (f==='propiedad') {
+        plazas[i].propiedad = e.target.value;
       } else if (f==='estado') {
         plazas[i].estado = e.target.value;
         const badge = e.target.closest('.plaza-fields').previousElementSibling.querySelector('.sep-estado');
@@ -523,7 +547,7 @@ function refreshPagoSelect() {
 
 document.getElementById('btn-nueva').addEventListener('click', () => {
   const newId = String(Math.floor(Math.random()*900)+100);
-  plazas.push({id:newId, inquilino:'', renta:0, estado:'libre', llave:false, obs:''});
+  plazas.push({id:newId, inquilino:'', renta:0, estado:'libre', llave:false, obs:'', propiedad:'Mario'});
   saveLocal(); renderPlazas(); updateSummary(); refreshPagoSelect();
   document.getElementById('plazas-wrap').lastElementChild?.scrollIntoView({behavior:'smooth', block:'nearest'});
   toast('Nueva cochera añadida', '#2a4abf');
@@ -636,10 +660,10 @@ document.getElementById('btn-excel').addEventListener('click', () => {
   try {
     const wb = XLSX.utils.book_new();
     const wsRes = XLSX.utils.aoa_to_sheet([
-      ['Cochera','Inquilino','Renta mensual (€)','Estado','Llave entregada','Observaciones'],
-      ...plazas.map(p => [p.id, p.inquilino||'Libre', p.renta, p.estado, p.llave?'Sí':'No', p.obs||''])
+      ['Cochera','Inquilino','Renta mensual (€)','Estado','Propiedad','Total cobrado (€)','Llave entregada','Observaciones'],
+      ...plazas.map(p => [p.id, p.inquilino||'Libre', p.renta, p.estado, p.propiedad||'Mario', calcTotal(p.id), p.llave?'Sí':'No', p.obs||''])
     ]);
-    wsRes['!cols'] = [{wch:10},{wch:14},{wch:18},{wch:12},{wch:15},{wch:30}];
+    wsRes['!cols'] = [{wch:10},{wch:14},{wch:18},{wch:12},{wch:10},{wch:18},{wch:15},{wch:30}];
     XLSX.utils.book_append_sheet(wb, wsRes, 'Resumen');
     const sorted = [...pagos].sort((a,b) => b.mes.localeCompare(a.mes));
     const wsSg = XLSX.utils.aoa_to_sheet([
