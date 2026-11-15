@@ -1,5 +1,5 @@
 // Subir CACHE en cada despliegue para que el móvil coja la versión nueva.
-const CACHE = 'cocheras-v1';
+const CACHE = 'cocheras-v2';
 const PRECACHE = [
   './',
   './index.html',
