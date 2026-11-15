@@ -40,7 +40,7 @@
   }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);}
+html,body{overflow-x:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);}
 body{min-height:100dvh;overscroll-behavior-y:contain;}
 button,input,select,textarea{font:inherit;color:inherit;}
 button{cursor:pointer;border:none;background:none;}
@@ -81,19 +81,20 @@ main{padding:12px calc(12px + var(--sr)) calc(var(--nav-h) + 96px + var(--sb)) c
 
 /* ── Controles de lista ── */
 .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
-.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;flex:1;min-width:220px;}
-.seg button{flex:1;min-height:40px;border-radius:9px;font-size:14px;color:var(--text-2);}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;flex:1 1 100%;min-width:0;}
+@media (min-width:600px){.seg{flex-basis:auto;}}
+.seg button{flex:1;min-width:0;min-height:40px;border-radius:9px;font-size:14px;color:var(--text-2);}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .btn-ghost{min-height:44px;padding:0 14px;border-radius:12px;border:1px dashed var(--amber-strong);color:var(--amber);font-size:14px;font-weight:600;}
 .btn-ghost:active{background:var(--amber-soft);}
-select.filter{min-height:44px;border-radius:12px;border:1px solid var(--border);background:var(--surface);padding:0 10px;font-size:16px;flex:1;min-width:140px;}
+select.filter{min-height:44px;border-radius:12px;border:1px solid var(--border);background:var(--surface);padding:0 10px;font-size:16px;flex:1;min-width:0;}
 
 /* ── Tarjetas ── */
-.list{display:grid;gap:8px;}
-@media (min-width:768px){.list{grid-template-columns:1fr 1fr;}}
+.list{display:grid;gap:8px;grid-template-columns:minmax(0,1fr);}
+@media (min-width:768px){.list{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .month-h{grid-column:1/-1;font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);
   display:flex;justify-content:space-between;padding:10px 4px 2px;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;min-height:64px;text-align:left;width:100%;}
+.card{min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;min-height:64px;text-align:left;width:100%;}
 .card:active{background:var(--surface-2);}
 .badge-pz{min-width:48px;height:44px;border-radius:10px;background:var(--blue-soft);color:var(--blue);font-family:var(--mono);font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0 6px;}
 .card .body{flex:1;min-width:0;}
