@@ -40,8 +40,9 @@
   }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{overflow-x:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);}
-body{min-height:100dvh;overscroll-behavior-y:contain;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);}
+body{min-height:100dvh;}
+main{overflow-x:clip;}
 button,input,select,textarea{font:inherit;color:inherit;}
 button{cursor:pointer;border:none;background:none;}
 button:disabled{opacity:.45;cursor:not-allowed;}
@@ -538,8 +539,14 @@ $('#sc-ok').addEventListener('click', e => busy(e.currentTarget, async () => { c
 // Teclado en iOS: subir el sheet por encima del teclado.
 if (window.visualViewport) {
   const vv = window.visualViewport;
-  const f = () => document.documentElement.style.setProperty('--kb', Math.max(0, innerHeight - vv.height - vv.offsetTop) + 'px');
-  vv.addEventListener('resize', f); vv.addEventListener('scroll', f);
+  // Solo con un sheet abierto y solo si cambia: en Android la barra de direcciones
+  // dispara resize al hacer scroll y recalcular estilos en cada frame lo entrecorta.
+  let last = -1;
+  const f = () => {
+    const kb = openSheetEl ? Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop)) : 0;
+    if (kb !== last) { last = kb; document.documentElement.style.setProperty('--kb', kb + 'px'); }
+  };
+  vv.addEventListener('resize', f, {passive:true}); vv.addEventListener('scroll', f, {passive:true});
 }
 
 function fillMesAnio(selMes, selAnio, valor) {
